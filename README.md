@@ -35,7 +35,7 @@ npm run flow:install
 ```
 Update Flow library definitions 
 ```sh
-npm run flow:update flow:coverage
+npm run flow:update
 ```
 Проверка покрытия кода типами
 ```sh
