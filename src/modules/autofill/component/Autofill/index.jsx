@@ -2,55 +2,158 @@
 import React from 'react';
 import bemCn from 'bem-cn';
 import './style.less';
+import {filterStrStartWith, uniqueList} from 'modules/autofill/helpers';
 
-type TProps = {
-    filter: string[],
+type TAutofillProps = {
+    staticFilter: string[],
     inputClassName?: string,
-    labelClassName?: string,
     label?: string,
+    labelClassName?: string,
     name?: string,
+    retrieveDataAsync?: (string) => void,
     showLabel?: boolean,
 };
+type TAutofillState = {
+    active: number;
+    filteredList: [];
+    inputValue?: string | null;
+    show: boolean;
+}
 
 const b = bemCn('autofill-group');
 
-class Autofill extends React.PureComponent<TProps> {
+class Autofill extends React.PureComponent<TAutofillProps, TAutofillState> {
     static defaultProps = {
-        filter: [],
+        staticFilter: [],
         inputClassName: null,
         labelClassName: null,
         label: 'Search',
         name: 'search',
         showLabel: true,
     };
-    handleOnChange = () => {};
-    handleOnKeyDown = () => {};
+
+    state = {
+        active: 0,
+        filteredList: [],
+        inputValue: '',
+        show: false,
+    };
+
+    componentDidUpdate(prevProps: TAutofillProps){
+        const {staticFilter} = this.props;
+        const {
+            staticFilter: prevStaticFilter
+        } = prevProps;
+
+        if (prevStaticFilter !== staticFilter) {
+            const filteredList = uniqueList(filterStrStartWith(this.state.inputValue, staticFilter));
+            console.log(filteredList);
+            this.setState({
+                filteredList,
+                show: Boolean(filteredList && filteredList.length),
+            });
+        }
+    }
+
+    componentDidMount() {
+        this.timer = null;
+    }
+
+    setTimer = (value) => {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            const {retrieveDataAsync} = this.props;
+            retrieveDataAsync(value);
+        }, 500)
+    };
+
+    handleOnChange = (e: SyntheticInputEvent<HTMLInputElement>): void => {
+        const currentValue = e.currentTarget.value;
+        this.setTimer(currentValue);
+        this.setState({
+            inputValue: currentValue,
+        });
+    };
+
+    handleOnClick = (e: SyntheticEvent<HTMLLIElement>): void => {
+        this.setState({
+            inputValue: e.currentTarget.innerText,
+            show: false,
+        });
+    };
+
+    handleOnKeyDown = (e: SyntheticKeyboardEvent<HTMLInputElement>): void => {
+        const {filteredList, active} = this.state;
+        const isEnter = e.keyCode === 13;
+        const isArrowUp = e.keyCode === 38;
+        const isArrowDown = e.keyCode === 40;
+        const isEsc = e.keyCode === 27;
+
+        if (isEnter) {
+            this.setState({
+                show: false,
+                inputValue: filteredList[active],
+                active: 0,
+            });
+        }
+
+        if (isEsc) {
+            this.setState({
+                show: false,
+                inputValue: '',
+                active: 0,
+            });
+        }
+
+        if (isArrowUp) {
+            if (this.state.active === 0) {
+                return null;
+            }
+
+            this.setState((currentState) => ({active: currentState.active - 1}));
+        }
+
+        if (isArrowDown) {
+            if (this.state.active === filteredList.length - 1) {
+                return null;
+            }
+
+            this.setState((currentState) => ({active: currentState.active + 1}));
+        }
+
+    };
 
 
     renderSearchList = () => {
-        const {
-            filter,
-        } = this.props;
-
-        return (
+        const {filteredList, show, active} = this.state;
+        const isShowList = show && filteredList && filteredList.length;
+        const maxLength = 10;
+        return isShowList ? (
             <ul className={b('list')}>
-                {filter.map((item) => (
-                    <li key={item}>{item}</li>
-                ))}
+                {filteredList.map((value, key) => (
+                    <li
+                        className={b('list-item', {active: key === active})}
+                        key={key}
+                        onClick={this.handleOnClick}
+                    >
+                        {value}
+                    </li>
+                )).slice(0, maxLength)}
             </ul>
-        );
+        ) : null;
     };
 
 
     render() {
         const {
-            filter,
             inputClassName,
             labelClassName,
             label,
             name,
             showLabel
         } = this.props;
+        const {inputValue} = this.state;
+
         return (
             <div className={b()}>
                 {showLabel ? <label htmlFor={name} className={b('label').mix(labelClassName)}>{label}</label> : null}
@@ -60,13 +163,14 @@ class Autofill extends React.PureComponent<TProps> {
                     onChange={this.handleOnChange}
                     onKeyDown={this.handleOnKeyDown}
                     name={name}
-                    value={value}
+                    value={inputValue}
                 />
-                {filter && filter.length ? this.renderSearchList() : <div>No result.</div>}
+                {this.renderSearchList()}
             </div>
-        );
+        );w
     }
 }
- export {
+
+export {
     Autofill,
 };

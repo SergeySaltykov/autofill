@@ -1,64 +1,42 @@
 // @flow
 import React from 'react';
-import { connect } from 'react-redux';
 import {Autofill} from 'modules/autofill/component/Autofill';
-
-import { bindActionCreators, compose } from 'redux';
-import type {TDispatch, TState} from 'app/types';
-// import type { SyntheticInputEvent } from 'react';
-
+import {compose} from 'redux';
+import {withAutofill} from 'modules/autofill/hocs/with-autofill';
 
 type TProps = {
-    // filter: TCatalog[],
-    // getCatalogList: typeof getCatalogList,
+    catalogList: [string],
+    retrieveDataAsync?: (string) => void,
+    filter: [string],
 };
 
-function mapStateToProps(state: TState) {
-    return {
-    };
-}
-
-function mapDispatchToProps(dispatch: TDispatch) {
-    return bindActionCreators({
-    }, dispatch);
-}
-
 class AutofillContainers extends React.Component<TProps> {
-    // componentDidMount() {
-    //     const { getCatalogList } = this.props;
-    //
-    //     getCatalogList();
-    // }
-
-    // componentDidUpdate(nextProps: TProps) {}
-
-    // handleChangeSearchName = (e: SyntheticInputEvent<HTMLInputElement>): void => {
-    //     const { catalog, updateCatalog } = this.props;
-    //     const currentValue = e.target.value.toLowerCase();
-    //
-    //     const filter = catalog.filter(user => user.name.toLowerCase().includes(currentValue));
-    //
-    //     updateCatalog(filter);
-    // };
+    static defaultProps = {
+        filter: ['black', 'white', 'green', 'blue', 'grey', 'grey', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10'],
+    };
 
     render() {
-        // const { catalog, filter } = this.props;
-        const filter = ['black', 'white', 'green'];
-
+        const {retrieveDataAsync, filter, catalogList} = this.props;
+        console.log(catalogList);
         return (
             <div>
                 <h1>Autocomlete demonstration</h1>
-                <Autofill filter={filter}/>
+                <Autofill
+                    retrieveDataAsync={retrieveDataAsync}
+                    // staticFilter={filter}
+                    staticFilter={catalogList}
+                />
             </div>
         );
     }
 }
 
-const AutofillContainersHOC =
-    compose (
-        connect(mapStateToProps, mapDispatchToProps),
+const decorator =
+    compose(
+        withAutofill,
     )
     (AutofillContainers);
+
 export {
-    AutofillContainersHOC as AutofillContainers,
+    decorator as AutofillContainers,
 };

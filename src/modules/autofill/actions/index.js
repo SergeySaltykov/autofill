@@ -7,10 +7,12 @@ const catalogListSuccess = createAction('Catalog list load success');
 const catalogListFail = createAction('Catalog list load fail');
 
 function getCatalogList() {
-    return async (dispatch: TDispatch, getState: TGetState) => { /* for example */
+    return async (dispatch: TDispatch, getState: TGetState) => {
         dispatch(catalogListLoad());
 
         try {
+            /*TODO можно прокидывать searchText через query
+            *  Например: url = 'host/api?query=${searchText}'*/
             const { data } = await fetch('/api/catalog.json').then(r => r.json());
             dispatch(catalogListSuccess(data));
         } catch (error) {
@@ -26,6 +28,5 @@ export {
     catalogListFail,
     catalogListLoad,
     catalogListSuccess,
-
-    updateList,
+    getCatalogList,
 };

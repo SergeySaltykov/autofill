@@ -1,10 +1,9 @@
 // @flow
 
-export type TCatalog = {||};
+export type TCatalog = [string];
 
 export type TAutofillState = {|
-    data: TCatalog[],
-    error: Object,
-    filter: TCatalog[],
+    data: TCatalog,
+    error: {},
     isLoading: boolean,
 |};
