@@ -1,8 +1,9 @@
 // @flow
 import React from 'react';
+import type { SyntheticInputEvent, SyntheticEvent, SyntheticKeyboardEvent } from 'react';
 import bemCn from 'bem-cn';
 import './style.less';
-import {filterStrStartWith, uniqueList} from 'modules/autofill/helpers';
+import { filterStrStartWith, uniqueList } from 'modules/autofill/helpers';
 
 type TAutofillProps = {
     staticFilter: string[],
@@ -39,15 +40,21 @@ class Autofill extends React.PureComponent<TAutofillProps, TAutofillState> {
         show: false,
     };
 
-    componentDidUpdate(prevProps: TAutofillProps){
-        const {staticFilter} = this.props;
+    componentDidMount() {
+        this.timer = null;
+    }
+
+    componentDidUpdate(prevProps: TAutofillProps) {
+        const { staticFilter } = this.props;
+        const { inputValue } = this.state;
         const {
-            staticFilter: prevStaticFilter
+            staticFilter: prevStaticFilter,
         } = prevProps;
 
         if (prevStaticFilter !== staticFilter) {
-            const filteredList = uniqueList(filterStrStartWith(this.state.inputValue, staticFilter));
-            console.log(filteredList);
+            const maxLength = 10;
+            const filteredList = uniqueList(filterStrStartWith(inputValue, staticFilter)).slice(0, maxLength);
+
             this.setState({
                 filteredList,
                 show: Boolean(filteredList && filteredList.length),
@@ -55,16 +62,12 @@ class Autofill extends React.PureComponent<TAutofillProps, TAutofillState> {
         }
     }
 
-    componentDidMount() {
-        this.timer = null;
-    }
-
     setTimer = (value) => {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
-            const {retrieveDataAsync} = this.props;
+            const { retrieveDataAsync } = this.props;
             retrieveDataAsync(value);
-        }, 500)
+        }, 500);
     };
 
     handleOnChange = (e: SyntheticInputEvent<HTMLInputElement>): void => {
@@ -83,7 +86,7 @@ class Autofill extends React.PureComponent<TAutofillProps, TAutofillState> {
     };
 
     handleOnKeyDown = (e: SyntheticKeyboardEvent<HTMLInputElement>): void => {
-        const {filteredList, active} = this.state;
+        const { filteredList, active } = this.state;
         const isEnter = e.keyCode === 13;
         const isArrowUp = e.keyCode === 38;
         const isArrowDown = e.keyCode === 40;
@@ -106,39 +109,37 @@ class Autofill extends React.PureComponent<TAutofillProps, TAutofillState> {
         }
 
         if (isArrowUp) {
-            if (this.state.active === 0) {
+            if (active === 0) {
                 return null;
             }
 
-            this.setState((currentState) => ({active: currentState.active - 1}));
+            this.setState(currentState => ({ active: currentState.active - 1 }));
         }
 
         if (isArrowDown) {
-            if (this.state.active === filteredList.length - 1) {
+            if (active === filteredList.length - 1) {
                 return null;
             }
 
-            this.setState((currentState) => ({active: currentState.active + 1}));
+            this.setState(currentState => ({ active: currentState.active + 1 }));
         }
-
     };
 
 
     renderSearchList = () => {
-        const {filteredList, show, active} = this.state;
+        const { filteredList, show, active } = this.state;
         const isShowList = show && filteredList && filteredList.length;
-        const maxLength = 10;
         return isShowList ? (
             <ul className={b('list')}>
                 {filteredList.map((value, key) => (
                     <li
-                        className={b('list-item', {active: key === active})}
-                        key={key}
+                        className={b('list-item', { active: key === active })}
+                        key={value}
                         onClick={this.handleOnClick}
                     >
                         {value}
                     </li>
-                )).slice(0, maxLength)}
+                ))}
             </ul>
         ) : null;
     };
@@ -150,9 +151,9 @@ class Autofill extends React.PureComponent<TAutofillProps, TAutofillState> {
             labelClassName,
             label,
             name,
-            showLabel
+            showLabel,
         } = this.props;
-        const {inputValue} = this.state;
+        const { inputValue } = this.state;
 
         return (
             <div className={b()}>
@@ -167,7 +168,7 @@ class Autofill extends React.PureComponent<TAutofillProps, TAutofillState> {
                 />
                 {this.renderSearchList()}
             </div>
-        );w
+        );
     }
 }
 

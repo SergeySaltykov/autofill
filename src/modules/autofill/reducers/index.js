@@ -25,9 +25,8 @@ const autofill = createReducer({
         data: payload,
         isLoading: false,
     }),
-    [catalogListFail]: (state: TState, error: Object): TAutofillState => ({
+    [catalogListFail]: (state: TState): TAutofillState => ({
         ...state,
-        error,
         isLoading: false,
     }),
 }, initialState);

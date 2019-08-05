@@ -17,7 +17,7 @@ class AutofillContainers extends React.Component<TProps> {
 
     render() {
         const {retrieveDataAsync, filter, catalogList} = this.props;
-        console.log(catalogList);
+
         return (
             <div>
                 <h1>Autocomlete demonstration</h1>

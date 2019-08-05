@@ -2,7 +2,8 @@
     "env": {
         "browser": true,
         "es6": true,
-        "node": true
+        "node": true,
+        "jest": true
     },
     "extends": "airbnb",
     "globals": {
@@ -19,7 +20,8 @@
     },
     "plugins": [
         "react",
-        "flowtype"
+        "flowtype",
+        "jest"
     ],
     "rules": {
         "indent": ["error", 4],
